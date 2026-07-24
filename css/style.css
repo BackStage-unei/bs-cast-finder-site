@@ -141,11 +141,25 @@ img { max-width: 100%; display: block; }
 .cast-cta:hover { background: var(--accent-weak); }
 .sub-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
 /* 次点以降は横カルーセル（縦の高さを一定に保ち、iframe内部スクロールを作らない） */
+.car-wrap { position: relative; }
 .carousel {
   display: flex; gap: 12px; overflow-x: auto; margin-top: 16px;
   padding-bottom: 8px; scrollbar-width: thin;
 }
 .carousel .cast-card { flex: 0 0 200px; margin-top: 0; }
+/* 「右にまだある」ことを示す浮遊矢印（ふわふわ左右に揺れる） */
+.car-next {
+  position: absolute; right: 4px; top: 50%; margin-top: -22px;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--grad); color: var(--text);
+  font-size: 1.6rem; font-weight: 800; line-height: 1;
+  box-shadow: var(--shadow);
+  animation: nudge 1.4s ease-in-out infinite;
+}
+@keyframes nudge {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(6px); }
+}
 .retry { display: block; margin: 28px auto 0; color: var(--text-sub); font-size: 0.9rem;
   text-decoration: underline; }
 

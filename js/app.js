@@ -235,9 +235,21 @@
     const others = pool.slice(1);
     if (others.length) {
       v.appendChild(el('p', 'result-heading', 'このキャストたちも気が合いそう'));
+      const wrap = el('div', 'car-wrap');
       const car = el('div', 'carousel');
       for (const cid of others) car.appendChild(castCard(castById(cid), false));
-      v.appendChild(car);
+      wrap.appendChild(car);
+      // 右へスワイプできることを示す浮遊矢印（末尾に達したら消える）
+      const next = el('button', 'car-next', '›');
+      next.setAttribute('aria-label', '次のキャストを見る');
+      next.addEventListener('click', () => car.scrollBy({ left: 212, behavior: 'smooth' }));
+      const updateNext = () => {
+        next.hidden = car.scrollLeft + car.clientWidth >= car.scrollWidth - 16;
+      };
+      car.addEventListener('scroll', updateNext, { passive: true });
+      wrap.appendChild(next);
+      v.appendChild(wrap);
+      requestAnimationFrame(updateNext); // 初期状態（1枚しか無い等）でも正しく判定
     }
 
     const retry = el('button', 'retry', 'もう一度さがす');
