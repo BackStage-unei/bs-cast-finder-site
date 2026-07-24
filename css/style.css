@@ -147,18 +147,23 @@ img { max-width: 100%; display: block; }
   padding-bottom: 8px; scrollbar-width: thin;
 }
 .carousel .cast-card { flex: 0 0 200px; margin-top: 0; }
-/* 「右にまだある」ことを示す浮遊矢印（ふわふわ左右に揺れる） */
-.car-next {
-  position: absolute; right: 4px; top: 50%; margin-top: -22px;
+/* 「横にまだある」ことを示す浮遊矢印（ふわふわ揺れる・端に達した側は消える） */
+.car-arrow {
+  position: absolute; top: 50%; margin-top: -22px;
   width: 44px; height: 44px; border-radius: 50%;
   background: var(--grad); color: var(--text);
   font-size: 1.6rem; font-weight: 800; line-height: 1;
   box-shadow: var(--shadow);
-  animation: nudge 1.4s ease-in-out infinite;
 }
-@keyframes nudge {
+.car-next { right: 4px; animation: nudge-r 1.4s ease-in-out infinite; }
+.car-prev { left: 4px; animation: nudge-l 1.4s ease-in-out infinite; }
+@keyframes nudge-r {
   0%, 100% { transform: translateX(0); }
   50% { transform: translateX(6px); }
+}
+@keyframes nudge-l {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-6px); }
 }
 .retry { display: block; margin: 28px auto 0; color: var(--text-sub); font-size: 0.9rem;
   text-decoration: underline; }
@@ -166,7 +171,6 @@ img { max-width: 100%; display: block; }
 /* ---- 隠し紹介ページ ---- */
 .app-link { display: block; margin: 18px auto 0; max-width: 280px; text-decoration: none;
   padding: 12px 32px; font-size: 0.95rem; }
-.profile-note { text-align: center; color: var(--text-sub); font-size: 0.8rem; margin-bottom: 16px; }
 .profile-catch { text-align: center; font-size: 1rem; font-weight: 700; margin-top: 14px;
   color: var(--accent); line-height: 1.7; }
 .profile-intro { margin-top: 14px; line-height: 2; font-size: 0.95rem; color: var(--text-sub);

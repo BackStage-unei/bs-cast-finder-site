@@ -239,17 +239,22 @@
       const car = el('div', 'carousel');
       for (const cid of others) car.appendChild(castCard(castById(cid), false));
       wrap.appendChild(car);
-      // 右へスワイプできることを示す浮遊矢印（末尾に達したら消える）
-      const next = el('button', 'car-next', '›');
+      // 左右にスワイプできることを示す浮遊矢印（端に達した側は消える）
+      const prev = el('button', 'car-arrow car-prev', '‹');
+      prev.setAttribute('aria-label', 'まえのキャストを見る');
+      prev.addEventListener('click', () => car.scrollBy({ left: -212, behavior: 'smooth' }));
+      const next = el('button', 'car-arrow car-next', '›');
       next.setAttribute('aria-label', '次のキャストを見る');
       next.addEventListener('click', () => car.scrollBy({ left: 212, behavior: 'smooth' }));
-      const updateNext = () => {
+      const updateArrows = () => {
+        prev.hidden = car.scrollLeft <= 16;
         next.hidden = car.scrollLeft + car.clientWidth >= car.scrollWidth - 16;
       };
-      car.addEventListener('scroll', updateNext, { passive: true });
+      car.addEventListener('scroll', updateArrows, { passive: true });
+      wrap.appendChild(prev);
       wrap.appendChild(next);
       v.appendChild(wrap);
-      requestAnimationFrame(updateNext); // 初期状態（1枚しか無い等）でも正しく判定
+      requestAnimationFrame(updateArrows); // 初期状態（1枚しか無い等）でも正しく判定
     }
 
     const retry = el('button', 'retry', 'もう一度さがす');
@@ -291,7 +296,6 @@
   // ---- 隠し紹介ページ（無ランク勢のみ・URLなし） ----
   function renderProfile(cast) {
     const v = el('div', 'profile');
-    v.appendChild(el('p', 'profile-note', 'テストに答えた人だけが見られるページ'));
     const card = el('div', 'cast-card top');
     const img = el('img', 'cast-icon');
     img.src = cast.icon;
