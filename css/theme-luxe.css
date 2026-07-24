@@ -1,0 +1,29 @@
+/* =============================================================
+ * theme-luxe.css — デザイントークン（色・角丸・影は全部ここ）
+ * bs-shift-calendar の theme-luxe.css からトークンを流用し、
+ * アクセントを紫→ソフトシアンへ差し替え（showcaseとの差別化）。
+ * style.css には色を書かない。
+ * ============================================================= */
+:root {
+  --bg: #0b0a10;
+  --surface: #16141f;
+  --surface-2: #1e1b2a;
+  --line: #38324c;
+  --text: #f5f3f7;
+  --text-sub: #b3acc4;
+  --accent: #7fd4f5;            /* showcaseの #c99aff と差別化するソフトシアン */
+  --accent-weak: rgba(127, 212, 245, 0.14);
+  --grad: linear-gradient(100deg, #38bdf8, #8b5cf6 60%, #ff2d78);
+  --gold: #f0c530;
+  --silver: #cbd5e1;
+  --bronze: #d08a4e;
+  /* 勲章（月桂樹）用の3段グラデ。bs-cast-showcase と同値 */
+  --gold-1: #f8e8b0;   --gold-2: #f0c530;   --gold-3: #9a6b06;
+  --silver-1: #f1f5f9; --silver-2: #cbd5e1; --silver-3: #64748b;
+  --bronze-1: #f3c9a0; --bronze-2: #d08a4e; --bronze-3: #7c4a1e;
+  --ok: #4ade80;                /* 出勤中バッジ */
+  --veil: rgba(11, 10, 16, 0.8);
+  --radius: 14px;
+  --radius-s: 10px;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
