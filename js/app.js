@@ -176,6 +176,9 @@
     label.appendChild(el('span', null, ' 人'));
     poolBox.appendChild(label);
     const grid = el('div', 'pool-grid');
+    // 候補数に応じてアイコンサイズを段階調整（画面高さに収めて内部スクロールを避ける）
+    if (pool.length > 40) grid.classList.add('size-s');
+    else if (pool.length > 14) grid.classList.add('size-m');
     for (const cid of pool) {
       const c = castById(cid);
       const img = el('img', 'pool-icon');

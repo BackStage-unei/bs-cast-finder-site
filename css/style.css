@@ -66,17 +66,17 @@ img { max-width: 100%; display: block; }
 .dot.done { background: var(--accent); }
 .dot.current { background: var(--accent); outline: 3px solid var(--accent-weak); }
 .q-text { font-size: 1.25rem; font-weight: 800; text-align: center; line-height: 1.6; }
-.q-options { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+.q-options { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
 .q-option {
   display: flex; align-items: center; gap: 12px;
-  padding: 14px 18px; border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 11px 16px; border: 1px solid var(--line); border-radius: var(--radius);
   background: var(--surface); text-align: left; font-size: 1rem; font-weight: 700;
 }
 .q-option:hover { border-color: var(--accent); background: var(--surface-2); }
 .q-option .emoji { font-size: 1.3rem; }
 
 /* ---- 絞り込みプール ---- */
-.pool { margin-top: 32px; }
+.pool { margin-top: 20px; }
 .pool-label { color: var(--text-sub); font-size: 0.8rem; text-align: center; }
 .pool-count { color: var(--accent); font-weight: 800; }
 .pool-grid {
@@ -87,6 +87,11 @@ img { max-width: 100%; display: block; }
   border: 1px solid var(--line); object-fit: cover;
   transition: opacity 0.4s, transform 0.4s;
 }
+/* 候補が多い序盤はアイコンを小さくして、質問画面が埋め込み高さ(約640px)に収まるようにする
+   （iframe内部スクロールが発生すると埋め込み先ページのスクロールを奪ってしまうため） */
+.pool-grid.size-m .pool-icon { width: 26px; height: 26px; }
+.pool-grid.size-s .pool-icon { width: 19px; height: 19px; }
+.pool-grid.size-s { gap: 4px; }
 .pool-icon.out { opacity: 0; transform: scale(0.5); }
 
 /* ---- 結果 ---- */
