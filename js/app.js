@@ -9,10 +9,13 @@
 
   const app = document.getElementById('app');
 
-  // ?bg=clear / ?bg=veil（埋め込み先に馴染ませる背景モードのみURLを見る）
-  const bg = new URLSearchParams(location.search).get('bg');
+  // ?bg=clear / ?bg=veil / ?bg=RRGGBB（埋め込み先に馴染ませる背景モードのみURLを見る）
+  // STUDIOはカスタム埋め込みを不透明なサンドボックスiframeで包むため完全透過(clear)が
+  // 効かない。その場合は埋め込み先セクションの色を ?bg=RRGGBB で指定して擬似透過にする
+  const bg = new URLSearchParams(location.search).get('bg') || '';
   if (bg === 'clear') document.body.classList.add('bg-clear');
-  if (bg === 'veil') document.body.classList.add('bg-veil');
+  else if (bg === 'veil') document.body.classList.add('bg-veil');
+  else if (/^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(bg)) document.body.style.background = '#' + bg;
 
   if (!window.FINDER || !window.FinderEngine) {
     app.appendChild(el('p', 'intro-lead', '準備中です。しばらくお待ちください。'));
