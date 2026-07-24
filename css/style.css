@@ -87,11 +87,6 @@ img { max-width: 100%; display: block; }
   border: 1px solid var(--line); object-fit: cover;
   transition: opacity 0.4s, transform 0.4s;
 }
-/* 候補が多い序盤はアイコンを小さくして、質問画面が埋め込み高さ(約640px)に収まるようにする
-   （iframe内部スクロールが発生すると埋め込み先ページのスクロールを奪ってしまうため） */
-.pool-grid.size-m .pool-icon { width: 26px; height: 26px; }
-.pool-grid.size-s .pool-icon { width: 19px; height: 19px; }
-.pool-grid.size-s { gap: 4px; }
 .pool-icon.out { opacity: 0; transform: scale(0.5); }
 
 /* ---- 結果 ---- */
@@ -145,6 +140,19 @@ img { max-width: 100%; display: block; }
 }
 .cast-cta:hover { background: var(--accent-weak); }
 .sub-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+/* 次点以降は横カルーセル（縦の高さを一定に保ち、iframe内部スクロールを作らない） */
+.carousel {
+  display: flex; gap: 12px; overflow-x: auto; margin-top: 16px;
+  padding-bottom: 8px; scrollbar-width: thin;
+}
+.carousel .cast-card { flex: 0 0 200px; margin-top: 0; }
+.more-tile {
+  flex: 0 0 140px; display: grid; place-items: center;
+  border: 1px dashed var(--line); border-radius: var(--radius);
+  color: var(--text-sub); font-size: 0.85rem; font-weight: 700; line-height: 1.8;
+  white-space: pre-line; text-align: center;
+}
+.more-tile:hover { border-color: var(--accent); color: var(--accent); }
 .retry { display: block; margin: 28px auto 0; color: var(--text-sub); font-size: 0.9rem;
   text-decoration: underline; }
 

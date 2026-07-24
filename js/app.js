@@ -176,9 +176,6 @@
     label.appendChild(el('span', null, ' 人'));
     poolBox.appendChild(label);
     const grid = el('div', 'pool-grid');
-    // 候補数に応じてアイコンサイズを段階調整（画面高さに収めて内部スクロールを避ける）
-    if (pool.length > 40) grid.classList.add('size-s');
-    else if (pool.length > 14) grid.classList.add('size-m');
     for (const cid of pool) {
       const c = castById(cid);
       const img = el('img', 'pool-icon');
@@ -227,31 +224,30 @@
 
   // ---- 結果 ----
   function renderResult() {
-    // pool は最終プール（質問中に見えていた候補と必ず一致する）。上位3名を出し、
-    // 残りは「もっと見る」で全員開示（最後まで残った子は全員会える）
-    const top = pool.slice(0, DATA.resultCount);
-    const rest = pool.slice(DATA.resultCount);
+    // pool は最終プール（質問中に見えていた候補と必ず一致する）。
+    // TOP1は最上部に大きく、残りは横カルーセル（縦の高さを一定に保ち、
+    // iframe内部スクロールを発生させない=埋め込み先のスクロールを奪わない）
     const v = el('div', 'result');
     v.appendChild(el('p', 'result-heading', 'あなたにぴったりなのは……'));
+    v.appendChild(castCard(castById(pool[0]), true));
 
-    top.forEach((cid, i) => {
-      if (i === 1) v.appendChild(el('p', 'result-heading', 'このキャストたちも気が合いそう'));
-      const holder = i === 0 ? v : (v.querySelector('.sub-row') ||
-        v.appendChild(el('div', 'sub-row')));
-      holder.appendChild(castCard(castById(cid), i === 0));
-    });
-
-    if (rest.length) {
-      const moreWrap = el('div', 'more-wrap');
-      const moreBtn = el('button', 'retry', `もっと見る（あと${rest.length}人）`);
-      moreBtn.addEventListener('click', () => {
-        moreWrap.textContent = '';
-        const grid = el('div', 'sub-row');
-        for (const cid of rest) grid.appendChild(castCard(castById(cid), false));
-        moreWrap.appendChild(grid);
-      });
-      moreWrap.appendChild(moreBtn);
-      v.appendChild(moreWrap);
+    const others = pool.slice(1);
+    if (others.length) {
+      v.appendChild(el('p', 'result-heading', 'このキャストたちも気が合いそう'));
+      const car = el('div', 'carousel');
+      for (const cid of others.slice(0, DATA.resultCount - 1)) {
+        car.appendChild(castCard(castById(cid), false));
+      }
+      const rest = others.slice(DATA.resultCount - 1);
+      if (rest.length) {
+        const tile = el('button', 'more-tile', `もっと見る\n（あと${rest.length}人）`);
+        tile.addEventListener('click', () => {
+          for (const cid of rest) car.appendChild(castCard(castById(cid), false));
+          tile.remove();
+        });
+        car.appendChild(tile);
+      }
+      v.appendChild(car);
     }
 
     const retry = el('button', 'retry', 'もう一度さがす');
