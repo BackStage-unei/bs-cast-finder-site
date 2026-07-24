@@ -146,13 +146,6 @@ img { max-width: 100%; display: block; }
   padding-bottom: 8px; scrollbar-width: thin;
 }
 .carousel .cast-card { flex: 0 0 200px; margin-top: 0; }
-.more-tile {
-  flex: 0 0 140px; display: grid; place-items: center;
-  border: 1px dashed var(--line); border-radius: var(--radius);
-  color: var(--text-sub); font-size: 0.85rem; font-weight: 700; line-height: 1.8;
-  white-space: pre-line; text-align: center;
-}
-.more-tile:hover { border-color: var(--accent); color: var(--accent); }
 .retry { display: block; margin: 28px auto 0; color: var(--text-sub); font-size: 0.9rem;
   text-decoration: underline; }
 

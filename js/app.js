@@ -231,22 +231,12 @@
     v.appendChild(el('p', 'result-heading', 'あなたにぴったりなのは……'));
     v.appendChild(castCard(castById(pool[0]), true));
 
+    // 最後まで残った候補は全員そのままカルーセルへ（「もっと見る」は置かない）
     const others = pool.slice(1);
     if (others.length) {
       v.appendChild(el('p', 'result-heading', 'このキャストたちも気が合いそう'));
       const car = el('div', 'carousel');
-      for (const cid of others.slice(0, DATA.resultCount - 1)) {
-        car.appendChild(castCard(castById(cid), false));
-      }
-      const rest = others.slice(DATA.resultCount - 1);
-      if (rest.length) {
-        const tile = el('button', 'more-tile', `もっと見る\n（あと${rest.length}人）`);
-        tile.addEventListener('click', () => {
-          for (const cid of rest) car.appendChild(castCard(castById(cid), false));
-          tile.remove();
-        });
-        car.appendChild(tile);
-      }
+      for (const cid of others) car.appendChild(castCard(castById(cid), false));
       v.appendChild(car);
     }
 
