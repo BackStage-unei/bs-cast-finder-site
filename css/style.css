@@ -173,6 +173,13 @@ img { max-width: 100%; display: block; }
   padding: 12px 32px; font-size: 0.95rem; }
 .profile-catch { text-align: center; font-size: 1rem; font-weight: 700; margin-top: 14px;
   color: var(--accent); line-height: 1.7; }
+/* ランク勢のスペック表（showcase由来） */
+.spec-list {
+  display: grid; grid-template-columns: auto 1fr; gap: 6px 14px;
+  margin-top: 14px; text-align: left; font-size: 0.85rem;
+}
+.spec-label { color: var(--text-sub); font-weight: 700; white-space: nowrap; }
+.spec-value { color: var(--text); }
 .profile-intro { margin-top: 14px; line-height: 2; font-size: 0.95rem; color: var(--text-sub);
   text-align: left; }
 

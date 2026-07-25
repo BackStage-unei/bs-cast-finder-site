@@ -278,22 +278,14 @@
       for (const t of tags) wrap.appendChild(el('span', 'match-tag', t));
       card.appendChild(wrap);
     }
-    // CTAは全員「プロフィールを見る」で統一（遷移先はランク勢=showcase別タブ / 無ランク=サイト内紹介ページ）
-    if (cast.showcaseUrl) {
-      const a = el('a', 'cast-cta', 'プロフィールを見る →');
-      a.href = cast.showcaseUrl;
-      a.target = '_blank';
-      a.rel = 'noopener';
-      card.appendChild(a);
-    } else {
-      const btn = el('button', 'cast-cta', 'プロフィールを見る →');
-      btn.addEventListener('click', () => renderProfile(cast));
-      card.appendChild(btn);
-    }
+    // 全員サイト内の紹介ページへ（画面から離れないUXで統一。2026-07-25にshowcase遷移を廃止）
+    const btn = el('button', 'cast-cta', 'プロフィールを見る →');
+    btn.addEventListener('click', () => renderProfile(cast));
+    card.appendChild(btn);
     return card;
   }
 
-  // ---- 隠し紹介ページ（無ランク勢のみ・URLなし） ----
+  // ---- 紹介ページ（URLなし・テスト通過者のみ。ランク勢はextraで情報量が厚い） ----
   function renderProfile(cast) {
     const v = el('div', 'profile');
     const card = el('div', 'cast-card top');
@@ -302,6 +294,7 @@
     img.alt = cast.name;
     card.appendChild(img);
     card.appendChild(el('p', 'cast-name', cast.name));
+    if (cast.rank) card.appendChild(el('p', `rank-badge ${cast.rank}`, cast.rank.toUpperCase()));
     card.appendChild(shiftBadge(cast));
     if (cast.profile && cast.profile.catch) {
       card.appendChild(el('p', 'profile-catch', cast.profile.catch));
@@ -313,6 +306,29 @@
       a.target = '_blank';
       a.rel = 'noopener';
       card.appendChild(a);
+    }
+    if (cast.extra) {
+      // ランク勢の追加情報（公開showcase由来: タグ・スペック・Xリンク）
+      if (cast.extra.tags.length) {
+        const wrap = el('div', 'match-tags');
+        for (const t of cast.extra.tags) wrap.appendChild(el('span', 'match-tag', t));
+        card.appendChild(wrap);
+      }
+      if (cast.extra.specs.length) {
+        const list = el('dl', 'spec-list');
+        for (const s of cast.extra.specs) {
+          list.appendChild(el('dt', 'spec-label', s.label));
+          list.appendChild(el('dd', 'spec-value', s.value));
+        }
+        card.appendChild(list);
+      }
+      if (cast.extra.xUrl) {
+        const x = el('a', 'cast-cta', 'X（旧Twitter）を見る →');
+        x.href = cast.extra.xUrl;
+        x.target = '_blank';
+        x.rel = 'noopener';
+        card.appendChild(x);
+      }
     }
     if (cast.profile && cast.profile.intro) {
       card.appendChild(el('p', 'profile-intro', cast.profile.intro));
@@ -337,4 +353,12 @@
   }
 
   renderIntro();
+
+  // テスト検証用フック（Playwrightが全キャストのプロフィール高さを検査するために使う。
+  // データは元々finder-data.jsで全公開されているため、これによる秘匿性の低下はない）
+  window.__openProfile = (cid) => {
+    const c = castById(cid);
+    if (c) renderProfile(c);
+    return !!c;
+  };
 })();
