@@ -288,16 +288,22 @@
   // ---- 紹介ページ（URLなし・テスト通過者のみ。ランク勢はextraで情報量が厚い） ----
   function renderProfile(cast) {
     const v = el('div', 'profile');
-    const card = el('div', 'cast-card top');
+    // ランク勢はCastRank(showcase)の意匠（明朝・二重罫線・CLASSバッジ・ヘアライン）を移植
+    const ranked = !!cast.rank;
+    const card = el('div', `cast-card top profile-card${ranked ? ` ranked rank-${cast.rank}` : ''}`);
+    if (ranked) {
+      card.appendChild(el('div', 'pr-frame'));
+      card.appendChild(el('span', 'pr-watermark', cast.rank.toUpperCase()));
+    }
     const img = el('img', 'cast-icon');
     img.src = cast.icon;
     img.alt = cast.name;
     card.appendChild(img);
-    card.appendChild(el('p', 'cast-name', cast.name));
-    if (cast.rank) card.appendChild(el('p', `rank-badge ${cast.rank}`, cast.rank.toUpperCase()));
+    card.appendChild(el('p', `cast-name${ranked ? ' pr-name' : ''}`, cast.name));
+    if (ranked) card.appendChild(el('p', `rank-badge ${cast.rank}`, `${cast.rank.toUpperCase()} CLASS`));
     card.appendChild(shiftBadge(cast));
     if (cast.profile && cast.profile.catch) {
-      card.appendChild(el('p', 'profile-catch', cast.profile.catch));
+      card.appendChild(el('p', `profile-catch${ranked ? ' pr-catch' : ''}`, cast.profile.catch));
     }
     if (cast.appUrl) {
       // BackStageアプリで直接会いに行けるDeeplink（未インストール時はストアへ）

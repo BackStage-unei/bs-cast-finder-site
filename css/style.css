@@ -173,6 +173,53 @@ img { max-width: 100%; display: block; }
   padding: 12px 32px; font-size: 0.95rem; }
 .profile-catch { text-align: center; font-size: 1rem; font-weight: 700; margin-top: 14px;
   color: var(--accent); line-height: 1.7; }
+/* ---- ランク勢プロフィール: CastRank(showcase)の意匠移植 ----
+   金二重罫線の額縁+菱形 / 明朝タイポ / CLASSバッジ / 名前下ヘアライン / ウォーターマーク。
+   明朝はCSP(外部フォント禁止)のためシステムフォントスタックで再現 */
+.profile-card { position: relative; overflow: hidden; }
+.profile-card.rank-gold   { --rank-1: var(--gold-1);   --rank-2: var(--gold-2);   --rank-3: var(--gold-3); }
+.profile-card.rank-silver { --rank-1: var(--silver-1); --rank-2: var(--silver-2); --rank-3: var(--silver-3); }
+.profile-card.rank-bronze { --rank-1: var(--bronze-1); --rank-2: var(--bronze-2); --rank-3: var(--bronze-3); }
+.profile-card.ranked { border-color: color-mix(in srgb, var(--rank-2) 55%, transparent); padding: 28px 24px; }
+.profile-card.ranked > :not(.pr-frame):not(.pr-watermark) { position: relative; }
+.pr-frame {
+  position: absolute; inset: 8px;
+  border: 1px solid color-mix(in srgb, var(--rank-2) 45%, transparent);
+  pointer-events: none;
+}
+.pr-frame::before {
+  content: ""; position: absolute; inset: 4px;
+  border: 1px solid color-mix(in srgb, var(--rank-2) 22%, transparent);
+}
+.pr-frame::after {
+  content: ""; position: absolute; top: -4px; left: 50%; margin-left: -3.5px;
+  width: 7px; height: 7px; background: var(--rank-2); transform: rotate(45deg);
+}
+.pr-watermark {
+  position: absolute; top: 0; right: 10px;
+  font-weight: 800; font-size: 54px; letter-spacing: 0.08em; line-height: 1.2;
+  color: color-mix(in srgb, var(--rank-2) 13%, transparent);
+  pointer-events: none;
+}
+.pr-name {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  font-weight: 700; font-size: 1.65rem; letter-spacing: 0.06em;
+  padding-bottom: 12px;
+}
+.pr-name::after {
+  content: ""; position: absolute; left: 12%; right: 12%; bottom: 0; height: 1px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--rank-2) 15%, transparent),
+    var(--rank-2),
+    color-mix(in srgb, var(--rank-2) 15%, transparent));
+}
+.profile-card.ranked .rank-badge { letter-spacing: 0.34em; text-indent: 0.34em; margin-top: 10px; }
+.pr-catch {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  font-weight: 600; font-size: 1.05rem; line-height: 1.8;
+  background: var(--grad);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
 /* ランク勢のスペック表（showcase由来） */
 .spec-list {
   display: grid; grid-template-columns: auto 1fr; gap: 6px 14px;
