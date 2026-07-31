@@ -130,9 +130,11 @@
       const opt = q.options.find((o) => o.id === answers[qid]);
       if (!opt) continue;
       if (opt.special === 'shift_now') {
+        // now+3 / later_today+2: ハード絞り込み時は「出勤中＞これから」の順位、
+        // 該当ゼロのフォールバック時は「今日この後の待機者」が相性勢より浮く重み
         const st = shiftStatus(shiftIndex, cast.id, today, nowMinutes);
-        if (st.status === 'now') total += 2;
-        else if (st.status === 'later_today') total += 1;
+        if (st.status === 'now') total += 3;
+        else if (st.status === 'later_today') total += 2;
         continue;
       }
       const best = {};

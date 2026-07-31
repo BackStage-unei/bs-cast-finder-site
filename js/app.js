@@ -155,12 +155,6 @@
     const opts = el('div', 'q-options');
     let advancing = false; // フェード中の多重クリック防止
     for (const o of q.options) {
-      // 「今からいける！」は現在プールに出勤該当者（出勤中 or 60分以内開始）が
-      // いない時間帯は出さない（選んだのに誰も出てこない事故を構造的に防ぐ）
-      if (o.special === 'shift_now' &&
-          !E.shiftEligibleIds(shiftIndex, pool, todayJST(), nowMinutesJST()).length) {
-        continue;
-      }
       const btn = el('button', 'q-option');
       btn.appendChild(el('span', 'emoji', o.emoji || ''));
       btn.appendChild(el('span', null, o.label));
@@ -169,8 +163,10 @@
         advancing = true;
         history.push({ qid: q.id, prevPool: pool, prevScoring: scoringCount });
         answers[q.id] = o.id;
-        // 「今からいける！」はプールを出勤該当者だけに絞る（ハード絞り込み）。
-        // ボタン表示後に時間が経ち全滅していた場合だけは絞らず続行（結果ゼロを防ぐ）
+        // 「今からいける！」は出勤該当者（出勤中 or 60分以内開始）がいれば
+        // その人たちだけに絞る（ハード絞り込み）。いない時間帯は絞らず続行＝
+        // 今日この後の待機者がスコア加点(+2)で浮き、相性上位と混ざって出る
+        // フォールバック（バッジが「今日 HH:MM〜 出勤」等を説明する）
         if (o.special === 'shift_now') {
           const eligible = new Set(
             E.shiftEligibleIds(shiftIndex, pool, todayJST(), nowMinutesJST()));
