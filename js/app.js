@@ -61,7 +61,8 @@
   let tiebreak = shuffle(DATA.casts.map((c) => c.id));
   let pool = [...tiebreak]; // 表示中の候補プール。縮むだけで、増えない
   let scoringCount = 0; // 加点のあった回答の数（無加点の「どちらでも」等ではプールを減らさない）
-  let history = []; // 回答ごとのスナップショット（戻る用）: {qid, prevPool, prevScoring}
+  let history = []; // 回答ごとのスナップショット（戻る用）: {qid, prevPool, prevScoring, prevPinned}
+  let pinnedNow = null; // 「今からいける」該当者のピン留め（以降の質問でも脱落させず上位固定）
 
   function shuffle(arr) {
     const a = [...arr];
@@ -85,11 +86,21 @@
 
   /** 加点のあった回答を1つ確定するたびに、現在のプールの中だけからスコア上位を残す。
    * 全キャストから取り直すと一度消えた候補が再登場してしまう（単調絞り込みの保証）。
-   * スケジュールは「加点のあった回答の数」で進む——希望を伝えたときだけ減る。 */
+   * スケジュールは「加点のあった回答の数」で進む——希望を伝えたときだけ減る。
+   * 「今からいける」該当者（pinnedNow）は以降の質問でも脱落させず常にプール先頭
+   * （＝結果の上位）に置き、残り枠はスコア上位で補完する。 */
   function shrinkPool(scoringAnswerCount) {
     const schedule = DATA.poolSchedule;
     const size = schedule[Math.min(scoringAnswerCount, schedule.length) - 1];
-    pool = E.narrowPool(pool, currentScores(), tiebreak, size);
+    const scores = currentScores();
+    if (pinnedNow) {
+      const pinned = pool.filter((cid) => pinnedNow.has(cid));
+      const rest = pool.filter((cid) => !pinnedNow.has(cid));
+      const head = E.narrowPool(pinned, scores, tiebreak, Math.min(pinned.length, size));
+      pool = head.concat(E.narrowPool(rest, scores, tiebreak, Math.max(size - head.length, 0)));
+    } else {
+      pool = E.narrowPool(pool, scores, tiebreak, size);
+    }
     return pool;
   }
 
@@ -112,6 +123,7 @@
     pool = [...tiebreak];
     scoringCount = 0;
     history = [];
+    pinnedNow = null;
     const v = el('div', 'intro');
     v.appendChild(el('h1', 'intro-title', 'あなたが話しやすいキャスト、\nさがします'));
     v.appendChild(el('p', 'intro-lead',
@@ -136,6 +148,7 @@
         delete answers[last.qid];
         pool = last.prevPool;
         scoringCount = last.prevScoring;
+        pinnedNow = last.prevPinned || null;
         renderQuestion(qIndex - 1);
       });
       v.appendChild(back);
@@ -161,17 +174,18 @@
       btn.addEventListener('click', () => {
         if (advancing) return;
         advancing = true;
-        history.push({ qid: q.id, prevPool: pool, prevScoring: scoringCount });
+        history.push({ qid: q.id, prevPool: pool, prevScoring: scoringCount, prevPinned: pinnedNow });
         answers[q.id] = o.id;
-        // 「今からいける！」は出勤該当者（出勤中 or 60分以内開始）がいれば
-        // その人たちだけに絞る（ハード絞り込み）。いない時間帯は絞らず続行＝
-        // 今日この後の待機者がスコア加点(+2)で浮き、相性上位と混ざって出る
-        // フォールバック（バッジが「今日 HH:MM〜 出勤」等を説明する）
+        // 「今からいける！」は出勤該当者（出勤中 or 60分以内開始）をピン留め:
+        // 以降の質問でも脱落せず常に上位に出る。該当者が1名でも他の候補が
+        // 相性順で並走する（プールは通常人数のまま）。該当ゼロの時間帯は
+        // ピンなしで続行＝今日この後の待機者がスコア加点(+2)で浮き、
+        // 相性上位と混ざるフォールバック（バッジが「今日 HH:MM〜」等を説明）
         if (o.special === 'shift_now') {
           const eligible = new Set(
             E.shiftEligibleIds(shiftIndex, pool, todayJST(), nowMinutesJST()));
           const filtered = pool.filter((cid) => eligible.has(cid));
-          if (filtered.length) pool = filtered;
+          pinnedNow = filtered.length ? new Set(filtered) : null;
         }
         const next = () => {
           if (qIndex + 1 < DATA.questions.length) renderQuestion(qIndex + 1);
