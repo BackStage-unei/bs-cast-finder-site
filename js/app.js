@@ -24,7 +24,26 @@
 
   const DATA = window.FINDER;
   const E = window.FinderEngine;
-  const SHIFT_INDEX = E.buildShiftIndexFromIds(DATA.shifts.days);
+
+  // シフトは焼き込みデータで即座に動き、実行時にカレンダー公開データへ差し替える。
+  // shift-data.js は同一オリジン（backstage-unei.github.io）なので CSP: script-src 'self' で
+  // 読める（fetch は connect-src が無いため不可）。失敗時は焼き込みのまま＝従来動作。
+  const LIVE_SHIFT_URL = 'https://backstage-unei.github.io/bs-shift-calendar-site/shift-data.js';
+  let shiftIndex = E.buildShiftIndexFromIds(DATA.shifts.days);
+  (function loadLiveShifts() {
+    const s = document.createElement('script');
+    s.src = LIVE_SHIFT_URL;
+    s.async = true;
+    s.onload = () => {
+      try {
+        const days = E.parseShiftcalWeeks(window.SHIFTCAL).days;
+        const idx = E.buildShiftIndex(days, E.buildNameToId(DATA.casts));
+        // ライブ側が空＝スキーマ変化や全滅の可能性。その場合は焼き込み（最大24h前）を使い続ける
+        if (Object.keys(idx).length) shiftIndex = idx;
+      } catch (e) { /* 変換不能なら焼き込みデータのまま */ }
+    };
+    document.head.appendChild(s);
+  })();
 
   // 属性値 → 表示ラベル（マッチ理由タグ用）
   const ATTR_LABELS = {
@@ -61,7 +80,7 @@
   }
 
   function currentScores() {
-    return E.scoreAll(DATA.casts, answers, DATA.questions, SHIFT_INDEX, todayJST(), nowMinutesJST());
+    return E.scoreAll(DATA.casts, answers, DATA.questions, shiftIndex, todayJST(), nowMinutesJST());
   }
 
   /** 加点のあった回答を1つ確定するたびに、現在のプールの中だけからスコア上位を残す。
@@ -136,6 +155,12 @@
     const opts = el('div', 'q-options');
     let advancing = false; // フェード中の多重クリック防止
     for (const o of q.options) {
+      // 「今からいける！」は現在プールに出勤該当者（出勤中 or 60分以内開始）が
+      // いない時間帯は出さない（選んだのに誰も出てこない事故を構造的に防ぐ）
+      if (o.special === 'shift_now' &&
+          !E.shiftEligibleIds(shiftIndex, pool, todayJST(), nowMinutesJST()).length) {
+        continue;
+      }
       const btn = el('button', 'q-option');
       btn.appendChild(el('span', 'emoji', o.emoji || ''));
       btn.appendChild(el('span', null, o.label));
@@ -144,6 +169,14 @@
         advancing = true;
         history.push({ qid: q.id, prevPool: pool, prevScoring: scoringCount });
         answers[q.id] = o.id;
+        // 「今からいける！」はプールを出勤該当者だけに絞る（ハード絞り込み）。
+        // ボタン表示後に時間が経ち全滅していた場合だけは絞らず続行（結果ゼロを防ぐ）
+        if (o.special === 'shift_now') {
+          const eligible = new Set(
+            E.shiftEligibleIds(shiftIndex, pool, todayJST(), nowMinutesJST()));
+          const filtered = pool.filter((cid) => eligible.has(cid));
+          if (filtered.length) pool = filtered;
+        }
         const next = () => {
           if (qIndex + 1 < DATA.questions.length) renderQuestion(qIndex + 1);
           else renderResult();
@@ -212,7 +245,7 @@
 
   // ---- 出勤バッジ ----
   function shiftBadge(cast) {
-    const st = E.shiftStatus(SHIFT_INDEX, cast.id, todayJST(), nowMinutesJST());
+    const st = E.shiftStatus(shiftIndex, cast.id, todayJST(), nowMinutesJST());
     if (st.status === 'now') {
       const b = el('span', 'shift-badge now', '🟢 いま出勤中');
       return b;

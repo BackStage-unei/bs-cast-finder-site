@@ -22,6 +22,33 @@
     return Number(m[1]) * 60 + Number(m[2]);
   }
 
+  /** シフト名⇔キャスト名照合用の正規化（全角空白→半角・連続空白畳み込み・trim） */
+  function normalizeCastName(name) {
+    return String(name || '').replace(/[\s　]+/g, ' ').trim();
+  }
+
+  /** 正規化済み名前 → cast id のマップ（シフト名照合は必ずこれを使う） */
+  function buildNameToId(casts) {
+    const map = {};
+    for (const c of casts) map[normalizeCastName(c.name)] = c.id;
+    return map;
+  }
+
+  /** shift-data.js の SHIFTCAL 週構造 → shifts正準形（Python: parse_shiftcal_weeks と同一） */
+  function parseShiftcalWeeks(shiftcal) {
+    const byDate = {};
+    const weeks = (shiftcal && shiftcal.weeks) || {};
+    for (const weekStart of Object.keys(weeks).sort()) {
+      for (const day of weeks[weekStart].days || []) {
+        byDate[day.date] = {
+          date: day.date,
+          slots: (day.slots || []).map((s) => ({ time: s.t, names: s.n || [] })),
+        };
+      }
+    }
+    return { days: Object.keys(byDate).sort().map((k) => byDate[k]) };
+  }
+
   function buildShiftIndex(shiftDays, nameToId) {
     const index = {};
     for (const day of shiftDays) {
@@ -29,7 +56,7 @@
         const minutes = parseSlotMinutes(slot.time);
         if (minutes === null) continue;
         for (const name of slot.names || []) {
-          const cid = nameToId[name];
+          const cid = nameToId[normalizeCastName(name)];
           if (cid === undefined) continue;
           (index[cid] = index[cid] || []).push([day.date, minutes, slot.time]);
         }
@@ -78,6 +105,21 @@
       }
     }
     return laterToday || upcoming || none;
+  }
+
+  /** 「今からいける」該当者: いま出勤中 or 今日この後 windowMinutes 分以内に開始。
+   * ids の順序を保持して返す（プールとの積集合に使うため）。 */
+  function shiftEligibleIds(shiftIndex, ids, today, nowMinutes, windowMinutes = 60) {
+    const out = [];
+    for (const cid of ids) {
+      const st = shiftStatus(shiftIndex, cid, today, nowMinutes);
+      if (st.status === 'now') { out.push(cid); continue; }
+      if (st.status === 'later_today') {
+        const start = parseSlotMinutes(st.time);
+        if (start !== null && start - nowMinutes <= windowMinutes) out.push(cid);
+      }
+    }
+    return out;
   }
 
   function scoreCast(cast, answers, questionsById, shiftIndex, today, nowMinutes) {
@@ -133,7 +175,7 @@
   }
 
   global.FinderEngine = {
-    attrMatches, parseSlotMinutes, buildShiftIndex, buildShiftIndexFromIds,
-    shiftStatus, scoreCast, scoreAll, poolIds, narrowPool,
+    attrMatches, parseSlotMinutes, normalizeCastName, buildNameToId, parseShiftcalWeeks, buildShiftIndex, buildShiftIndexFromIds,
+    shiftStatus, shiftEligibleIds, scoreCast, scoreAll, poolIds, narrowPool,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
