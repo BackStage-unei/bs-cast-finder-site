@@ -125,10 +125,10 @@
     history = [];
     pinnedNow = null;
     const v = el('div', 'intro');
-    v.appendChild(el('h1', 'intro-title', 'あなたが話しやすいキャスト、\nさがします'));
+    v.appendChild(el('h1', 'intro-title', 'あなたが話しやすいBster、\nさがします'));
     v.appendChild(el('p', 'intro-lead',
-      'はじめてでも大丈夫。7つのしつもんに答えるだけで、あなたにぴったりのキャストが見つかります。'));
-    v.appendChild(el('p', 'intro-count', `いま ${DATA.casts.length} 人のキャストが待っています`));
+      'はじめてでも大丈夫。7つのしつもんに答えるだけで、あなたにぴったりのBsterが見つかります。'));
+    v.appendChild(el('p', 'intro-count', `いま ${DATA.casts.length} 人のBsterが待っています`));
     const btn = el('button', 'btn-primary', 'はじめる');
     btn.addEventListener('click', () => renderQuestion(0));
     v.appendChild(btn);
@@ -277,17 +277,17 @@
     // 最後まで残った候補は全員そのままカルーセルへ（「もっと見る」は置かない）
     const others = pool.slice(1);
     if (others.length) {
-      v.appendChild(el('p', 'result-heading', 'このキャストたちも気が合いそう'));
+      v.appendChild(el('p', 'result-heading', 'このBsterたちも気が合いそう'));
       const wrap = el('div', 'car-wrap');
       const car = el('div', 'carousel');
       for (const cid of others) car.appendChild(castCard(castById(cid), false));
       wrap.appendChild(car);
       // 左右にスワイプできることを示す浮遊矢印（端に達した側は消える）
       const prev = el('button', 'car-arrow car-prev', '‹');
-      prev.setAttribute('aria-label', 'まえのキャストを見る');
+      prev.setAttribute('aria-label', 'まえのBsterを見る');
       prev.addEventListener('click', () => car.scrollBy({ left: -212, behavior: 'smooth' }));
       const next = el('button', 'car-arrow car-next', '›');
-      next.setAttribute('aria-label', '次のキャストを見る');
+      next.setAttribute('aria-label', '次のBsterを見る');
       next.addEventListener('click', () => car.scrollBy({ left: 212, behavior: 'smooth' }));
       const updateArrows = () => {
         prev.hidden = car.scrollLeft <= 16;
