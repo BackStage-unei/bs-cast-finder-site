@@ -127,10 +127,10 @@
     pinnedNow = null;
     filterMiss = null;
     const v = el('div', 'intro');
-    v.appendChild(el('h1', 'intro-title', 'あなたが話しやすいBster、\nさがします'));
+    v.appendChild(el('h1', 'intro-title', 'あなたが話しやすいBSter、\nさがします'));
     v.appendChild(el('p', 'intro-lead',
-      'はじめてでも大丈夫。7つのしつもんに答えるだけで、あなたにぴったりのBsterが見つかります。'));
-    v.appendChild(el('p', 'intro-count', `いま ${DATA.casts.length} 人のBsterが待っています`));
+      'はじめてでも大丈夫。7つのしつもんに答えるだけで、あなたにぴったりのBSterが見つかります。'));
+    v.appendChild(el('p', 'intro-count', `いま ${DATA.casts.length} 人のBSterが待っています`));
     const btn = el('button', 'btn-primary', 'はじめる');
     btn.addEventListener('click', () => renderQuestion(0));
     v.appendChild(btn);
@@ -183,7 +183,7 @@
         // 完全絞り込み（性別など）: 全キャストから該当者だけに取り直す（それまでの質問で
         // 脱落した該当者も戻す）。以降の絞り込みはこのプールの中だけなので他は二度と出ない。
         // 人数はスケジュールで縮むため表示人数は増えない。該当ゼロなら絞り込まず相性順で
-        // 続行し、注意書き（filterNote）で「近いBsterを紹介している」ことを伝える
+        // 続行し、注意書き（filterNote）で「近いBSterを紹介している」ことを伝える
         if (o.filter) {
           const matched = E.filterIdsByAttr(DATA.casts, tiebreak, o.filter.attr, o.filter.value);
           if (matched.length) {
@@ -260,7 +260,7 @@
   function filterNote() {
     const label = (ATTR_LABELS[filterMiss.attr] || {})[String(filterMiss.value)] || 'ご希望';
     return el('p', 'filter-note',
-      `いまは${label}のBsterがいないため、雰囲気の近いBsterを紹介しています`);
+      `いまは${label}のBSterがいないため、雰囲気の近いBSterを紹介しています`);
   }
 
   // ---- マッチ理由タグ ----
@@ -308,17 +308,17 @@
     // 最後まで残った候補は全員そのままカルーセルへ（「もっと見る」は置かない）
     const others = pool.slice(1);
     if (others.length) {
-      v.appendChild(el('p', 'result-heading', 'このBsterたちも気が合いそう'));
+      v.appendChild(el('p', 'result-heading', 'このBSterたちも気が合いそう'));
       const wrap = el('div', 'car-wrap');
       const car = el('div', 'carousel');
       for (const cid of others) car.appendChild(castCard(castById(cid), false));
       wrap.appendChild(car);
       // 左右にスワイプできることを示す浮遊矢印（端に達した側は消える）
       const prev = el('button', 'car-arrow car-prev', '‹');
-      prev.setAttribute('aria-label', 'まえのBsterを見る');
+      prev.setAttribute('aria-label', 'まえのBSterを見る');
       prev.addEventListener('click', () => car.scrollBy({ left: -212, behavior: 'smooth' }));
       const next = el('button', 'car-arrow car-next', '›');
-      next.setAttribute('aria-label', '次のBsterを見る');
+      next.setAttribute('aria-label', '次のBSterを見る');
       next.addEventListener('click', () => car.scrollBy({ left: 212, behavior: 'smooth' }));
       const updateArrows = () => {
         prev.hidden = car.scrollLeft <= 16;
