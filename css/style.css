@@ -78,6 +78,9 @@ img { max-width: 100%; display: block; }
 /* ---- 絞り込みプール ---- */
 .pool { margin-top: 20px; }
 .pool-label { color: var(--text-sub); font-size: 0.8rem; text-align: center; }
+/* 完全絞り込み（性別など）の該当ゼロ時の注意書き */
+.filter-note { margin: 8px auto; max-width: 30em; color: var(--text-sub); font-size: 0.78rem;
+  text-align: center; line-height: 1.5; }
 .pool-count { color: var(--accent); font-weight: 800; }
 .pool-grid {
   display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px;

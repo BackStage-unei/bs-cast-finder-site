@@ -61,8 +61,9 @@
   let tiebreak = shuffle(DATA.casts.map((c) => c.id));
   let pool = [...tiebreak]; // 表示中の候補プール。縮むだけで、増えない
   let scoringCount = 0; // 加点のあった回答の数（無加点の「どちらでも」等ではプールを減らさない）
-  let history = []; // 回答ごとのスナップショット（戻る用）: {qid, prevPool, prevScoring, prevPinned}
+  let history = []; // 回答ごとのスナップショット（戻る用）: {qid, prevPool, prevScoring, prevPinned, prevFilterMiss}
   let pinnedNow = null; // 「今からいける」該当者のピン留め（以降の質問でも脱落させず上位固定）
+  let filterMiss = null; // 完全絞り込み（性別など）の該当者がゼロだった条件 {attr, value}。注意書き表示用
 
   function shuffle(arr) {
     const a = [...arr];
@@ -124,6 +125,7 @@
     scoringCount = 0;
     history = [];
     pinnedNow = null;
+    filterMiss = null;
     const v = el('div', 'intro');
     v.appendChild(el('h1', 'intro-title', 'あなたが話しやすいBster、\nさがします'));
     v.appendChild(el('p', 'intro-lead',
@@ -149,6 +151,7 @@
         pool = last.prevPool;
         scoringCount = last.prevScoring;
         pinnedNow = last.prevPinned || null;
+        filterMiss = last.prevFilterMiss || null;
         renderQuestion(qIndex - 1);
       });
       v.appendChild(back);
@@ -174,8 +177,25 @@
       btn.addEventListener('click', () => {
         if (advancing) return;
         advancing = true;
-        history.push({ qid: q.id, prevPool: pool, prevScoring: scoringCount, prevPinned: pinnedNow });
+        history.push({ qid: q.id, prevPool: pool, prevScoring: scoringCount, prevPinned: pinnedNow,
+          prevFilterMiss: filterMiss });
         answers[q.id] = o.id;
+        // 完全絞り込み（性別など）: 全キャストから該当者だけに取り直す（それまでの質問で
+        // 脱落した該当者も戻す）。以降の絞り込みはこのプールの中だけなので他は二度と出ない。
+        // 人数はスケジュールで縮むため表示人数は増えない。該当ゼロなら絞り込まず相性順で
+        // 続行し、注意書き（filterNote）で「近いBsterを紹介している」ことを伝える
+        if (o.filter) {
+          const matched = E.filterIdsByAttr(DATA.casts, tiebreak, o.filter.attr, o.filter.value);
+          if (matched.length) {
+            pool = matched;
+            if (pinnedNow) {
+              const kept = matched.filter((cid) => pinnedNow.has(cid));
+              pinnedNow = kept.length ? new Set(kept) : null;
+            }
+          } else {
+            filterMiss = o.filter;
+          }
+        }
         // 「今からいける！」は出勤該当者（出勤中 or 60分以内開始）をピン留め:
         // 以降の質問でも脱落せず常に上位に出る。該当者が1名でも他の候補が
         // 相性順で並走する（プールは通常人数のまま）。該当ゼロの時間帯は
@@ -191,8 +211,10 @@
           if (qIndex + 1 < DATA.questions.length) renderQuestion(qIndex + 1);
           else renderResult();
         };
-        // 無加点の選択肢（どちらでも/まだ決めてない等）ではプールを減らさない
-        const isNeutral = !o.special && !(o.effects || []).length;
+        // 無加点の選択肢（どちらでも/まだ決めてない等）ではプールを減らさない。
+        // filter つきは加点が無くても必ずスケジュールで縮める（全員から取り直したプールを
+        // そのまま出すと表示人数が増えてしまう）
+        const isNeutral = !o.special && !o.filter && !(o.effects || []).length;
         if (isNeutral) { next(); return; }
         scoringCount += 1;
         const keep = new Set(shrinkPool(scoringCount)); // ここでプール確定（単調減少）
@@ -218,6 +240,7 @@
     label.appendChild(el('span', 'pool-count', String(pool.length)));
     label.appendChild(el('span', null, ' 人'));
     poolBox.appendChild(label);
+    if (filterMiss) poolBox.appendChild(filterNote());
     const grid = el('div', 'pool-grid');
     for (const cid of pool) {
       const c = castById(cid);
@@ -231,6 +254,13 @@
     v.appendChild(poolBox);
 
     show(v);
+  }
+
+  // ---- 完全絞り込みの該当ゼロ注意書き ----
+  function filterNote() {
+    const label = (ATTR_LABELS[filterMiss.attr] || {})[String(filterMiss.value)] || 'ご希望';
+    return el('p', 'filter-note',
+      `いまは${label}のBsterがいないため、雰囲気の近いBsterを紹介しています`);
   }
 
   // ---- マッチ理由タグ ----
@@ -271,6 +301,7 @@
     // TOP1は最上部に大きく、残りは横カルーセル（縦の高さを一定に保ち、
     // iframe内部スクロールを発生させない=埋め込み先のスクロールを奪わない）
     const v = el('div', 'result');
+    if (filterMiss) v.appendChild(filterNote());
     v.appendChild(el('p', 'result-heading', 'あなたにぴったりなのは……'));
     v.appendChild(castCard(castById(pool[0]), true));
 

@@ -156,6 +156,15 @@
     return scores;
   }
 
+  /** ids のうち attrs[attr] が value に一致するキャストだけを、ids の順序を保って返す。
+   * 選択肢の filter（例: 性別）による完全絞り込みに使う。空配列なら呼び出し側は
+   * 絞り込まずに相性順で続行する（該当ゼロのフォールバック）。 */
+  function filterIdsByAttr(casts, ids, attr, value) {
+    const byId = {};
+    for (const c of casts) byId[c.id] = c;
+    return ids.filter((cid) => byId[cid] && attrMatches(byId[cid].attrs, attr, value));
+  }
+
   /** 前回プールの中だけからスコア上位 size 名を選ぶ（単調絞り込み）。
    * 全キャストからの取り直しだと一度消えた候補が再登場し得るため、
    * UIの「候補が減っていく」という約束を守るには必ずこれで縮めること。 */
@@ -178,6 +187,6 @@
 
   global.FinderEngine = {
     attrMatches, parseSlotMinutes, normalizeCastName, buildNameToId, parseShiftcalWeeks, buildShiftIndex, buildShiftIndexFromIds,
-    shiftStatus, shiftEligibleIds, scoreCast, scoreAll, poolIds, narrowPool,
+    shiftStatus, shiftEligibleIds, scoreCast, scoreAll, poolIds, narrowPool, filterIdsByAttr,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
