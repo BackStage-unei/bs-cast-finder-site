@@ -176,6 +176,19 @@
     return poolIds(scoped, tiebreakOrder, size);
   }
 
+  /** 完全絞り込み（性別など）で取り直したプールを作る。表示人数は増やさず、
+   * 表示中の該当者は1人も減らさない（他の属性が抜けた分だけ、前の質問で脱落した
+   * 該当者をスコア上位から補充する）。並びはスコア順。
+   * pool: 直前の表示プール / matchedIds: 全キャスト中の該当者 */
+  function refillPoolByFilter(pool, matchedIds, scores, tiebreakOrder) {
+    const inPool = new Set(pool);
+    const visible = matchedIds.filter((cid) => inPool.has(cid));
+    const dropped = matchedIds.filter((cid) => !inPool.has(cid));
+    const extra = narrowPool(dropped, scores, tiebreakOrder, Math.max(pool.length - visible.length, 0));
+    const merged = visible.concat(extra);
+    return narrowPool(merged, scores, tiebreakOrder, merged.length);
+  }
+
   function poolIds(scores, tiebreakOrder, size) {
     const rank = {};
     tiebreakOrder.forEach((cid, i) => { rank[cid] = i; });
@@ -187,6 +200,6 @@
 
   global.FinderEngine = {
     attrMatches, parseSlotMinutes, normalizeCastName, buildNameToId, parseShiftcalWeeks, buildShiftIndex, buildShiftIndexFromIds,
-    shiftStatus, shiftEligibleIds, scoreCast, scoreAll, poolIds, narrowPool, filterIdsByAttr,
+    shiftStatus, shiftEligibleIds, scoreCast, scoreAll, poolIds, narrowPool, filterIdsByAttr, refillPoolByFilter,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -180,17 +180,26 @@
         history.push({ qid: q.id, prevPool: pool, prevScoring: scoringCount, prevPinned: pinnedNow,
           prevFilterMiss: filterMiss });
         answers[q.id] = o.id;
-        // 完全絞り込み（性別など）: 全キャストから該当者だけに取り直す（それまでの質問で
-        // 脱落した該当者も戻す）。以降の絞り込みはこのプールの中だけなので他は二度と出ない。
-        // 人数はスケジュールで縮むため表示人数は増えない。該当ゼロなら絞り込まず相性順で
-        // 続行し、注意書き（filterNote）で「近いBSterを紹介している」ことを伝える
+        // 完全絞り込み（性別など）: 該当者だけのプールに取り直す。表示中の該当者は
+        // 1人も減らさず、他の属性が抜けた枠だけ前の質問で脱落した該当者で補充する
+        // （表示人数は直前を超えない）。以降の絞り込みはこのプールの中だけなので他は
+        // 二度と出ない。この回答では段階（poolSchedule）を進めない。該当ゼロなら
+        // 絞り込まず相性順で続行し、注意書き（filterNote）で「近いBSterを紹介している」ことを伝える
+        let filterApplied = false;
         if (o.filter) {
           const matched = E.filterIdsByAttr(DATA.casts, tiebreak, o.filter.attr, o.filter.value);
           if (matched.length) {
-            pool = matched;
+            pool = E.refillPoolByFilter(pool, matched, currentScores(), tiebreak);
+            filterApplied = true;
             if (pinnedNow) {
               const kept = matched.filter((cid) => pinnedNow.has(cid));
               pinnedNow = kept.length ? new Set(kept) : null;
+              // この回答では shrinkPool を通らないので、ピン留め者の先頭固定をここで行う
+              // （性別が最後の質問のときも結果の上位に出す。QA P6 で検出）
+              if (pinnedNow) {
+                pool = pool.filter((cid) => pinnedNow.has(cid))
+                  .concat(pool.filter((cid) => !pinnedNow.has(cid)));
+              }
             }
           } else {
             filterMiss = o.filter;
@@ -212,12 +221,18 @@
           else renderResult();
         };
         // 無加点の選択肢（どちらでも/まだ決めてない等）ではプールを減らさない。
-        // filter つきは加点が無くても必ずスケジュールで縮める（全員から取り直したプールを
-        // そのまま出すと表示人数が増えてしまう）
+        // 絞り込みが効いた filter つき（性別）はプールが上で確定済み。段階は進めず、
+        // 他の属性のアイコンだけをフェードアウトさせる。該当ゼロ（filterMiss）のときは
+        // 加点のある通常の回答として縮める
         const isNeutral = !o.special && !o.filter && !(o.effects || []).length;
         if (isNeutral) { next(); return; }
-        scoringCount += 1;
-        const keep = new Set(shrinkPool(scoringCount)); // ここでプール確定（単調減少）
+        let keep;
+        if (filterApplied) {
+          keep = new Set(pool);
+        } else {
+          scoringCount += 1;
+          keep = new Set(shrinkPool(scoringCount)); // ここでプール確定（単調減少）
+        }
         // 脱落するアイコンをフェードアウトさせてから次へ
         const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const grid = v.querySelector('.pool-grid');
