@@ -375,6 +375,26 @@
   }
 
   // ---- 紹介ページ（URLなし・テスト通過者のみ。ランク勢はextraで情報量が厚い） ----
+  /** 大会実績の印（緑の細枠＋双葉）。honors は build で検査済みの [{e: 大会名, t: 称号, u?: URL}]。
+      URL は https のときだけリンクにする（念のため画面側でも確かめる）。狭い画面では大会名と称号の間でだけ折り返す */
+  function honorBadges(honors) {
+    const wrap = el('div', 'honor-list');
+    for (const h of honors || []) {
+      if (!h || typeof h.e !== 'string' || typeof h.t !== 'string') continue;
+      const link = typeof h.u === 'string' && /^https:\/\//.test(h.u);
+      const b = el(link ? 'a' : 'p', `honor-badge${link ? ' is-link' : ''}`);
+      b.appendChild(el('span', 'honor-badge__seg', h.e));
+      b.appendChild(el('span', 'honor-badge__seg', h.t));
+      if (link) {
+        b.href = h.u;
+        b.target = '_blank';
+        b.rel = 'noopener';
+      }
+      wrap.appendChild(b);
+    }
+    return wrap;
+  }
+
   function renderProfile(cast) {
     const v = el('div', 'profile');
     // ランク勢はCastRank(showcase)の意匠（明朝・二重罫線・CLASSバッジ・ヘアライン）を移植
@@ -390,6 +410,7 @@
     card.appendChild(img);
     card.appendChild(el('p', `cast-name${ranked ? ' pr-name' : ''}`, cast.name));
     if (ranked) card.appendChild(el('p', `rank-badge ${cast.rank}`, `${cast.rank.toUpperCase()} CLASS`));
+    if (cast.honors && cast.honors.length) card.appendChild(honorBadges(cast.honors));
     card.appendChild(shiftBadge(cast));
     if (cast.profile && cast.profile.catch) {
       card.appendChild(el('p', `profile-catch${ranked ? ' pr-catch' : ''}`, cast.profile.catch));

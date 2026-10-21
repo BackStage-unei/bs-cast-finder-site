@@ -125,6 +125,43 @@ img { max-width: 100%; display: block; }
 .rank-badge.gold   { --rank-1: var(--gold-1);   --rank-2: var(--gold-2);   --rank-3: var(--gold-3); }
 .rank-badge.silver { --rank-1: var(--silver-1); --rank-2: var(--silver-2); --rank-3: var(--silver-3); }
 .rank-badge.bronze { --rank-1: var(--bronze-1); --rank-2: var(--bronze-2); --rank-3: var(--bronze-3); }
+/* 大会実績の印（ルーキーチャレンジ優勝・Lv.MAX達成・他の大会）。緑の細枠＋双葉（sprout.svg を mask）。
+   「その中での実績」の控えめな印。出勤スケジュール（bs-shift-calendar）の紹介ポップアップと同じ見た目（2026-10-21） */
+.honor-list { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 10px; }
+.honor-badge {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2px 5px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 3px 11px;
+  border: 1px solid var(--honor);
+  border-radius: 14px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--honor-text);
+  text-decoration: none;
+}
+.honor-badge__seg:first-child::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 5px;
+  vertical-align: -1px;
+  background: var(--honor);
+  -webkit-mask: url("../assets/sprout.svg") no-repeat center / contain;
+  mask: url("../assets/sprout.svg") no-repeat center / contain;
+}
+/* 折り返しはまず大会名と称号の間で。1つの文言だけで幅を超えるときだけ、その中で折り返す */
+.honor-badge__seg { min-width: 0; overflow-wrap: anywhere; text-align: center; }
+.honor-badge.is-link .honor-badge__seg:last-child::after { content: "›"; margin-left: 4px; font-weight: 400; opacity: 0.8; }
+.honor-badge.is-link:hover, .honor-badge.is-link:focus-visible { background: var(--honor-bg); }
+.honor-badge.is-link:focus-visible { outline: 2px solid var(--honor); outline-offset: 2px; }
 .shift-badge {
   display: inline-block; margin-top: 10px; padding: 4px 12px;
   border-radius: 999px; font-size: 0.8rem; font-weight: 700;

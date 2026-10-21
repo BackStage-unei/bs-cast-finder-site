@@ -22,6 +22,9 @@
   --silver-1: #f1f5f9; --silver-2: #cbd5e1; --silver-3: #64748b;
   --bronze-1: #f3c9a0; --bronze-2: #d08a4e; --bronze-3: #7c4a1e;
   --ok: #4ade80;                /* 出勤中バッジ */
+  --honor: #6cc492;             /* 大会実績の印（若葉色。出勤スケジュールと同じ） */
+  --honor-bg: rgba(108, 196, 146, 0.12);
+  --honor-text: #bfe6cf;
   --veil: rgba(11, 10, 16, 0.8);
   --radius: 14px;
   --radius-s: 10px;
